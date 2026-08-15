@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { CommunityMember, LayoutMode } from '../types';
 import {
   loadArtworkTexture,
-  createCardShaderMaterial,
+  createCardMaterial,
   clearTextureCache,
 } from '../utils/textureGenerator';
 import {
@@ -25,7 +25,8 @@ interface ThreeCanvasProps {
 interface CardNode {
   member: CommunityMember;
   mesh: THREE.Mesh;
-  material: THREE.ShaderMaterial;
+  material: THREE.MeshBasicMaterial;
+  borderMesh: THREE.LineSegments;
   aspectRatio: number;
   baseTargetPos: THREE.Vector3;
   baseTargetQuaternion: THREE.Quaternion;
@@ -118,11 +119,14 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
     const unitGeometry = new THREE.PlaneGeometry(1, 1);
 
     // Generate Card Nodes preserving natural shapes & aspect ratios
+    const edgesGeometry = new THREE.EdgesGeometry(unitGeometry);
+
     const nodes: CardNode[] = members.map((member) => {
       const node: CardNode = {
         member,
         mesh: null!,
         material: null!,
+        borderMesh: null!,
         aspectRatio: 1.0,
         baseTargetPos: new THREE.Vector3(0, 0, 0),
         baseTargetQuaternion: new THREE.Quaternion(),
@@ -140,13 +144,24 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
         }
       });
 
-      const material = createCardShaderMaterial(texture);
+      const material = createCardMaterial(texture);
       const mesh = new THREE.Mesh(unitGeometry, material);
       mesh.userData = { memberId: member.id };
+
+      // Sleek outline border frame
+      const borderMaterial = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.3,
+      });
+      const borderMesh = new THREE.LineSegments(edgesGeometry, borderMaterial);
+      mesh.add(borderMesh);
+
       cardsGroup.add(mesh);
 
       node.mesh = mesh;
       node.material = material;
+      node.borderMesh = borderMesh;
 
       return node;
     });
@@ -319,11 +334,17 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
         node.mesh.scale.copy(node.currentScale);
 
         // Opacity and hover transitions
-        if (node.material.uniforms) {
-          node.material.uniforms.uOpacity.value +=
-            (targetOpacityVal - node.material.uniforms.uOpacity.value) * nodeLerpSpeed;
-          node.material.uniforms.uHover.value +=
-            ((isHovered ? 1.0 : 0.0) - node.material.uniforms.uHover.value) * 0.25;
+        node.material.opacity += (targetOpacityVal - node.material.opacity) * nodeLerpSpeed;
+
+        if (node.borderMesh && node.borderMesh.material) {
+          const borderMat = node.borderMesh.material as THREE.LineBasicMaterial;
+          const targetBorderOpacity = isHovered ? 0.95 : isMatched ? 0.35 : 0.08;
+          borderMat.opacity += (targetBorderOpacity - borderMat.opacity) * nodeLerpSpeed;
+          if (isHovered) {
+            borderMat.color.setHex(0xffffff);
+          } else {
+            borderMat.color.setHex(0xaaaaaa);
+          }
         }
       }
 
@@ -362,8 +383,12 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
       resizeObserver.disconnect();
       seismicUniverse.dispose();
       unitGeometry.dispose();
+      edgesGeometry.dispose();
       nodes.forEach((node) => {
         if (node.material) node.material.dispose();
+        if (node.borderMesh && node.borderMesh.material) {
+          (node.borderMesh.material as THREE.Material).dispose();
+        }
       });
       clearTextureCache();
       renderer.dispose();
