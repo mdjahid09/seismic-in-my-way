@@ -49,9 +49,9 @@ export function generateSphereLayout(count: number, radius: number = 4.8): Trans
  */
 export function generateHelixLayout(
   count: number,
-  radius: number = 6.2,
-  height: number = 7.5,
-  turns: number = 1.35
+  radius: number = 8.2,
+  height: number = 13.0,
+  turns: number = 3.2
 ): Transform3D[] {
   const transforms: Transform3D[] = [];
 

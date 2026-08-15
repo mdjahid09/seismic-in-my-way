@@ -13,8 +13,8 @@ export const ControlDock: React.FC<ControlDockProps> = ({
   const modes: { id: LayoutMode; label: string }[] = [
     { id: 'helix', label: 'Helix' },
     { id: 'grid', label: 'Grid' },
-    { id: 'table', label: 'Table' },
     { id: 'sphere', label: 'Sphere' },
+    { id: 'table', label: 'Table' },
   ];
 
   return (

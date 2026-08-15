@@ -425,26 +425,27 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
         break;
       }
       case 'helix': {
-        const radius = isMobile ? 6.5 : isTablet ? 7.6 : 8.4;
-        const height = Math.max(isMobile ? 12 : 16, count * (isMobile ? 0.28 : 0.34));
-        const turns = Math.max(1.8, count / 16);
+        // Balanced helical spiral: reduced vertical tier gap while preserving clean side-by-side breathing room
+        const radius = isMobile ? 6.5 : isTablet ? 7.5 : 8.2;
+        const height = Math.max(isMobile ? 10.5 : 13.0, count * (isMobile ? 0.19 : 0.22));
+        const turns = Math.max(2.6, count / 18);
         transforms = generateHelixLayout(count, radius, height, turns);
-        targetCameraDistRef.current = isMobile ? 22.0 : 19.5;
+        targetCameraDistRef.current = isMobile ? 19.5 : 17.5;
         break;
       }
       case 'grid': {
-        // Grid: Clean, organized rows & columns with visible spacing gaps and dimensional 3D depth
+        // Grid: Clean, organized rows & columns with visible spacing gaps, dimensional 3D depth, and slightly larger cards
         const columns = isMobile
           ? (count > 20 ? 4 : 3)
           : isTablet
           ? (count > 25 ? 5 : 4)
           : (count > 40 ? 6 : count > 20 ? 5 : 4);
-        const spacingX = isMobile ? 2.60 : isTablet ? 2.85 : 3.20;
-        const spacingY = isMobile ? 3.20 : isTablet ? 3.45 : 3.75;
+        const spacingX = isMobile ? 2.90 : isTablet ? 3.25 : 3.65;
+        const spacingY = isMobile ? 3.55 : isTablet ? 3.85 : 4.20;
         const depthIntensity = isMobile ? 0.95 : isTablet ? 1.30 : 1.65;
         transforms = generateGridLayout(count, columns, spacingX, spacingY, depthIntensity);
         const rows = Math.ceil(count / columns);
-        targetCameraDistRef.current = isMobile ? Math.max(22, rows * 2.85) : Math.max(19, rows * 2.5);
+        targetCameraDistRef.current = isMobile ? Math.max(24, rows * 3.1) : Math.max(21, rows * 2.7);
         break;
       }
       case 'table': {
@@ -474,7 +475,10 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
 
         // Native image proportions calculation (100% natural, zero stretching, guaranteed spacing)
         const aspect = node.aspectRatio || 1.0;
-        const maxCardDim = isMobile ? 1.85 : 2.15;
+        const isGrid = mode === 'grid';
+        const maxCardDim = isGrid
+          ? (isMobile ? 2.15 : 2.55)
+          : (isMobile ? 1.85 : 2.15);
         let scaleX: number;
         let scaleY: number;
 
