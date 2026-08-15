@@ -7,7 +7,7 @@ import { ControlDock } from './components/ControlDock';
 import { ProfileModal } from './components/ProfileModal';
 
 export default function App() {
-  const [activeMode, setActiveMode] = useState<LayoutMode>('sphere');
+  const [activeMode, setActiveMode] = useState<LayoutMode>('helix');
   const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
   const [backgroundConfig] = useState<BackgroundConfig>(defaultBackgroundConfig);
 

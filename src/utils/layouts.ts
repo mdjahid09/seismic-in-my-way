@@ -88,9 +88,9 @@ export function generateHelixLayout(
  */
 export function generateGridLayout(
   count: number,
-  columns: number = 4,
-  spacingX: number = 2.9,
-  spacingY: number = 3.1
+  columns: number = 6,
+  spacingX: number = 2.7,
+  spacingY: number = 3.3
 ): Transform3D[] {
   const transforms: Transform3D[] = [];
   const rows = Math.ceil(count / columns);

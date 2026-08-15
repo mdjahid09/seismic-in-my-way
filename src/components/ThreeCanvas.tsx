@@ -433,12 +433,16 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
         break;
       }
       case 'grid': {
-        const columns = isMobile ? (count > 20 ? 5 : 3) : count > 30 ? 8 : 4;
-        const spacingX = isMobile ? 2.4 : 2.8;
-        const spacingY = isMobile ? 2.6 : 3.0;
+        const columns = isMobile
+          ? (count > 15 ? 4 : 3)
+          : isTablet
+          ? (count > 25 ? 5 : 4)
+          : (count > 40 ? 6 : count > 20 ? 5 : 4);
+        const spacingX = isMobile ? 2.35 : isTablet ? 2.55 : 2.75;
+        const spacingY = isMobile ? 3.05 : isTablet ? 3.25 : 3.40;
         transforms = generateGridLayout(count, columns, spacingX, spacingY);
         const rows = Math.ceil(count / columns);
-        targetCameraDistRef.current = isMobile ? Math.max(18, rows * 2.6) : Math.max(16, rows * 2.3);
+        targetCameraDistRef.current = isMobile ? Math.max(20, rows * 2.8) : Math.max(18, rows * 2.5);
         break;
       }
       case 'table': {
