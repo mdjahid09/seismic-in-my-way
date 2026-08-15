@@ -1,5 +1,7 @@
 import { CommunityMember, BackgroundConfig } from '../types';
 
+export const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/lgz6kjbg/image/upload/v1786813992';
+
 export const staticArtworkFilenames: string[] = [
   'Untitled6_1.webp',
   'Untitled8_20250926020237.webp',
@@ -64,7 +66,10 @@ export const staticArtworkFilenames: string[] = [
 
 export const rawArtworkFilenames: string[] = staticArtworkFilenames;
 
-export const communityImageFiles: string[] = rawArtworkFilenames.map((file) => `/seismicart/${file}`);
+// Cloudinary-hosted avatar image URLs
+export const communityImageFiles: string[] = rawArtworkFilenames.map(
+  (file) => `${CLOUDINARY_BASE_URL}/${file}`
+);
 
 export const imageSources: string[] = communityImageFiles;
 

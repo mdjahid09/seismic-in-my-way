@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CommunityMember } from '../types';
 
 const textureLoader = new THREE.TextureLoader();
+textureLoader.setCrossOrigin('anonymous');
 const textureCache = new Map<string, THREE.Texture>();
 
 export function clearTextureCache() {
