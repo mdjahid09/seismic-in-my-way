@@ -83,14 +83,17 @@ export function generateHelixLayout(
 }
 
 /**
- * Clean Single-Layer 2D/3D Grid Layout.
- * Arranged neatly into rows and columns with no overlapping layers.
+ * Dimensional 3D Grid Layout.
+ * Arranged in clean, aligned rows and columns with guaranteed visible gaps/spacing,
+ * combined with subtle 3D depth (varied Z positions & scales) to create a sophisticated,
+ * dimensional floating gallery where cards never touch or overlap.
  */
 export function generateGridLayout(
   count: number,
   columns: number = 6,
-  spacingX: number = 2.7,
-  spacingY: number = 3.3
+  spacingX: number = 3.15,
+  spacingY: number = 3.65,
+  depthIntensity: number = 1.6
 ): Transform3D[] {
   const transforms: Transform3D[] = [];
   const rows = Math.ceil(count / columns);
@@ -104,18 +107,31 @@ export function generateGridLayout(
 
     const posX = col * spacingX - totalW / 2;
     const posY = totalH / 2 - row * spacingY;
-    const posZ = 0;
 
-    dummy.position.set(posX, posY, posZ);
-    dummy.scale.set(1, 1, 1);
-    dummy.rotation.set(0, 0, 0); // Flat facing camera
+    // Staggered multi-frequency depth offset for pronounced 3D relief without misalignment
+    // Alternates adjacent cells forward and backward with a smooth spatial modulation
+    const checker = ((col + row) % 2 === 0 ? 1 : -1) * 0.45;
+    const wave = Math.sin(col * 1.3 + row * 0.8) * 0.55;
+    const zOffset = (checker + wave) * depthIntensity; // Range approx -1.6 to +1.6
+
+    // Proportional scale variation: cards floating closer are slightly larger (0.90x to 1.10x)
+    const normalizedDepth = zOffset / (depthIntensity || 1); // -1 to +1
+    const scaleFactor = 1.0 + normalizedDepth * 0.10;
+
+    // Subtle dimensional tilt angle so cards catch spatial light & perspective
+    const tiltX = Math.sin(row * 1.1 + col * 0.9) * 0.045;
+    const tiltY = Math.cos(col * 1.2 - row * 0.7) * 0.045;
+
+    dummy.position.set(posX, posY, zOffset);
+    dummy.scale.set(scaleFactor, scaleFactor, 1);
+    dummy.rotation.set(tiltX, tiltY, 0);
 
     const q = dummy.quaternion;
 
     transforms.push({
-      position: [posX, posY, posZ],
+      position: [posX, posY, zOffset],
       quaternion: [q.x, q.y, q.z, q.w],
-      scale: [1, 1, 1],
+      scale: [scaleFactor, scaleFactor, 1],
     });
   }
 
@@ -124,20 +140,20 @@ export function generateGridLayout(
 
 /**
  * Curved Theater/Amphitheater Table Layout.
- * Cards are laid out in rows with a gentle cylindrical curve facing the user.
+ * Cards are laid out in compact, structured rows with a gentle cylindrical curve facing the user.
  */
 export function generateTableLayout(
   count: number,
   columns: number = 8,
-  spacingX: number = 2.8,
-  spacingY: number = 3.0,
-  curveRadius: number = 18
+  spacingX: number = 2.3,
+  spacingY: number = 2.7,
+  curveRadius: number = 16
 ): Transform3D[] {
   const transforms: Transform3D[] = [];
   const rows = Math.ceil(count / columns);
 
   const totalH = (rows - 1) * spacingY;
-  const angleStep = Math.min(0.22, 1.4 / Math.max(columns - 1, 1));
+  const angleStep = Math.min(0.20, 1.4 / Math.max(columns - 1, 1));
 
   for (let i = 0; i < count; i++) {
     const col = i % columns;

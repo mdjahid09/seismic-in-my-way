@@ -433,26 +433,29 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
         break;
       }
       case 'grid': {
+        // Grid: Clean, organized rows & columns with visible spacing gaps and dimensional 3D depth
         const columns = isMobile
-          ? (count > 15 ? 4 : 3)
+          ? (count > 20 ? 4 : 3)
           : isTablet
           ? (count > 25 ? 5 : 4)
           : (count > 40 ? 6 : count > 20 ? 5 : 4);
-        const spacingX = isMobile ? 2.35 : isTablet ? 2.55 : 2.75;
-        const spacingY = isMobile ? 3.05 : isTablet ? 3.25 : 3.40;
-        transforms = generateGridLayout(count, columns, spacingX, spacingY);
+        const spacingX = isMobile ? 2.60 : isTablet ? 2.85 : 3.20;
+        const spacingY = isMobile ? 3.20 : isTablet ? 3.45 : 3.75;
+        const depthIntensity = isMobile ? 0.95 : isTablet ? 1.30 : 1.65;
+        transforms = generateGridLayout(count, columns, spacingX, spacingY, depthIntensity);
         const rows = Math.ceil(count / columns);
-        targetCameraDistRef.current = isMobile ? Math.max(20, rows * 2.8) : Math.max(18, rows * 2.5);
+        targetCameraDistRef.current = isMobile ? Math.max(22, rows * 2.85) : Math.max(19, rows * 2.5);
         break;
       }
       case 'table': {
-        const columns = isMobile ? (count > 20 ? 6 : 4) : count > 30 ? 9 : 6;
-        const spacingX = isMobile ? 2.4 : 2.8;
-        const spacingY = isMobile ? 2.6 : 3.0;
-        const curveRadius = isMobile ? 16 : 20;
+        // Table: Compact, structured cylindrical amphitheater layout
+        const columns = isMobile ? (count > 20 ? 5 : 4) : count > 30 ? 8 : 6;
+        const spacingX = isMobile ? 2.05 : isTablet ? 2.20 : 2.30;
+        const spacingY = isMobile ? 2.35 : isTablet ? 2.45 : 2.55;
+        const curveRadius = isMobile ? 12 : isTablet ? 14 : 16;
         transforms = generateTableLayout(count, columns, spacingX, spacingY, curveRadius);
         const rows = Math.ceil(count / columns);
-        targetCameraDistRef.current = isMobile ? Math.max(19, rows * 2.7) : Math.max(17, rows * 2.4);
+        targetCameraDistRef.current = isMobile ? Math.max(16.5, rows * 2.3) : Math.max(14.5, rows * 2.05);
         break;
       }
     }
@@ -469,9 +472,9 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
           t.quaternion[3]
         );
 
-        // Native image proportions calculation (100% natural, zero stretching)
+        // Native image proportions calculation (100% natural, zero stretching, guaranteed spacing)
         const aspect = node.aspectRatio || 1.0;
-        const maxCardDim = isMobile ? 1.95 : 2.35;
+        const maxCardDim = isMobile ? 1.85 : 2.15;
         let scaleX: number;
         let scaleY: number;
 
