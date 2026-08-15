@@ -78,7 +78,7 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
     const scene = new THREE.Scene();
 
     // Floating 3D Background Universe of Seismic Crystal Monolith Logos
-    const seismicUniverse = createSeismicUniverse(40);
+    const seismicUniverse = createSeismicUniverse(16);
     scene.add(seismicUniverse.universeGroup);
 
     // Group for holding and rotating all cards together
@@ -416,41 +416,39 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
     switch (mode) {
       case 'sphere': {
         const radius = isMobile
-          ? Math.max(4.2, Math.sqrt(count * 1.3) * 0.88)
+          ? Math.max(5.2, Math.sqrt(count) * 0.8)
           : isTablet
-          ? Math.max(4.5, Math.sqrt(count * 1.45) * 0.92)
-          : Math.max(5.0, Math.sqrt(count * 1.6) * 0.96);
+          ? Math.max(6.2, Math.sqrt(count) * 0.95)
+          : Math.max(7.2, Math.sqrt(count) * 1.05);
         transforms = generateSphereLayout(count, radius);
-        targetCameraDistRef.current = Math.max(14.5, radius * 2.05);
+        targetCameraDistRef.current = isMobile ? radius * 2.8 : radius * 2.4;
         break;
       }
       case 'helix': {
-        const radius = isMobile ? 5.8 : isTablet ? 7.2 : 8.5;
-        const height = isMobile ? 15 : 19;
-        transforms = generateHelixLayout(count, radius, height, 4.5);
-        targetCameraDistRef.current = isMobile ? 24 : 20;
+        const radius = isMobile ? 6.5 : isTablet ? 7.6 : 8.4;
+        const height = Math.max(isMobile ? 12 : 16, count * (isMobile ? 0.28 : 0.34));
+        const turns = Math.max(1.8, count / 16);
+        transforms = generateHelixLayout(count, radius, height, turns);
+        targetCameraDistRef.current = isMobile ? 22.0 : 19.5;
         break;
       }
       case 'grid': {
-        const columns = isMobile ? 3 : isTablet ? 4 : 5;
-        const rows = isMobile ? 2 : isTablet ? 3 : 3;
-        const spacingX = isMobile ? 2.8 : 3.4;
-        const spacingY = isMobile ? 2.8 : 3.4;
-        const spacingZ = isMobile ? 3.8 : 4.6;
-        transforms = generateGridLayout(count, columns, rows, spacingX, spacingY, spacingZ);
-
-        const itemsPerLayer = Math.max(1, columns * rows);
-        const layers = Math.ceil(count / itemsPerLayer);
-        const depthExtent = layers * spacingZ;
-        targetCameraDistRef.current = Math.max(20, depthExtent * 1.1 + (isMobile ? 12 : 10));
+        const columns = isMobile ? (count > 20 ? 5 : 3) : count > 30 ? 8 : 4;
+        const spacingX = isMobile ? 2.4 : 2.8;
+        const spacingY = isMobile ? 2.6 : 3.0;
+        transforms = generateGridLayout(count, columns, spacingX, spacingY);
+        const rows = Math.ceil(count / columns);
+        targetCameraDistRef.current = isMobile ? Math.max(18, rows * 2.6) : Math.max(16, rows * 2.3);
         break;
       }
       case 'table': {
-        const columns = isMobile ? 7 : isTablet ? 10 : 12;
-        const spacingX = isMobile ? 2.5 : 2.75;
-        const spacingY = isMobile ? 2.6 : 2.85;
-        transforms = generateTableLayout(count, columns, spacingX, spacingY);
-        targetCameraDistRef.current = isMobile ? 30 : 24;
+        const columns = isMobile ? (count > 20 ? 6 : 4) : count > 30 ? 9 : 6;
+        const spacingX = isMobile ? 2.4 : 2.8;
+        const spacingY = isMobile ? 2.6 : 3.0;
+        const curveRadius = isMobile ? 16 : 20;
+        transforms = generateTableLayout(count, columns, spacingX, spacingY, curveRadius);
+        const rows = Math.ceil(count / columns);
+        targetCameraDistRef.current = isMobile ? Math.max(19, rows * 2.7) : Math.max(17, rows * 2.4);
         break;
       }
     }
@@ -467,18 +465,18 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
           t.quaternion[3]
         );
 
-        // Native image proportions calculation
+        // Native image proportions calculation (100% natural, zero stretching)
         const aspect = node.aspectRatio || 1.0;
-        const baseSize = 2.2;
-        let scaleX = baseSize;
-        let scaleY = baseSize;
+        const maxCardDim = isMobile ? 1.95 : 2.35;
+        let scaleX: number;
+        let scaleY: number;
 
         if (aspect >= 1) {
-          scaleX = baseSize * Math.min(aspect, 1.8);
-          scaleY = baseSize;
+          scaleX = maxCardDim;
+          scaleY = maxCardDim / aspect;
         } else {
-          scaleX = baseSize * Math.max(aspect, 0.5);
-          scaleY = baseSize / Math.max(aspect, 0.5);
+          scaleY = maxCardDim;
+          scaleX = maxCardDim * aspect;
         }
 
         node.baseTargetScale.set(scaleX * t.scale[0], scaleY * t.scale[1], 1);
@@ -546,8 +544,8 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
     const zoomSpeed = 0.03;
     const newDist = targetCameraDistRef.current + e.deltaY * zoomSpeed;
 
-    const minDistance = 10;
-    const maxDistance = 65;
+    const minDistance = 6;
+    const maxDistance = 120;
 
     targetCameraDistRef.current = Math.max(minDistance, Math.min(maxDistance, newDist));
   };
@@ -563,7 +561,7 @@ export const ThreeCanvas: React.FC<ThreeCanvasProps> = ({
         const delta = pinchStartDistRef.current - dist;
         const zoomSpeed = 0.08;
         const newDist = targetCameraDistRef.current + delta * zoomSpeed;
-        targetCameraDistRef.current = Math.max(10, Math.min(65, newDist));
+        targetCameraDistRef.current = Math.max(6, Math.min(120, newDist));
       }
       pinchStartDistRef.current = dist;
     }

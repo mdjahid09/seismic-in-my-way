@@ -201,7 +201,7 @@ export function create3DSeismicGeometry(): THREE.BufferGeometry {
 /**
  * Builds the Floating 3D Background Universe of Seismic Logos
  */
-export function createSeismicUniverse(count = 36): {
+export function createSeismicUniverse(count = 16): {
   universeGroup: THREE.Group;
   floatingLogos: FloatingLogo[];
   updateUniverse: (time: number) => void;
@@ -215,29 +215,29 @@ export function createSeismicUniverse(count = 36): {
   const edgesGeometry = new THREE.EdgesGeometry(crystal3DGeometry, 20);
   const cardPlaneGeometry = new THREE.PlaneGeometry(2.4, 2.4);
 
-  // Common materials with beautiful low-opacity glass/crystal appearance
+  // Common materials with subtle ambient crystal appearance
   for (let i = 0; i < count; i++) {
     const itemGroup = new THREE.Group();
     const materials: THREE.Material[] = [];
 
-    // Distribute in a deep 3D celestial sphere / cloud
-    const radius = 60 + Math.random() * 180;
+    // Distribute in deep background celestial sphere
+    const radius = 90 + Math.random() * 160;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
 
     const x = radius * Math.sin(phi) * Math.cos(theta);
-    const y = radius * Math.sin(phi) * Math.sin(theta) * 0.75;
-    const z = -40 - Math.random() * 220 + (Math.cos(theta) * 40);
+    const y = radius * Math.sin(phi) * Math.sin(theta) * 0.7;
+    const z = -70 - Math.random() * 180;
 
     const basePosition = new THREE.Vector3(x, y, z);
     itemGroup.position.copy(basePosition);
 
-    // Random scaling from subtle background shards (1.8x) to majestic drifting monoliths (6.5x)
-    const scaleFactor = 1.6 + Math.random() * 3.8;
+    // Scaling
+    const scaleFactor = 1.4 + Math.random() * 2.8;
     itemGroup.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
-    // Soft opacity tuned to gracefully blend into the warm dark backdrop (0.12 to 0.32)
-    const baseOpacity = 0.12 + Math.random() * 0.22;
+    // Soft opacity tuned to blend into backdrop without distracting from artwork cards
+    const baseOpacity = 0.07 + Math.random() * 0.12;
 
     // A. 3D Faceted Crystal Mesh
     const facetMaterial = new THREE.MeshStandardMaterial({
@@ -245,7 +245,7 @@ export function createSeismicUniverse(count = 36): {
       roughness: 0.35,
       metalness: 0.25,
       transparent: true,
-      opacity: baseOpacity * 0.85,
+      opacity: baseOpacity * 0.7,
       side: THREE.DoubleSide,
       depthWrite: false,
     });
@@ -258,7 +258,7 @@ export function createSeismicUniverse(count = 36): {
     const edgeMaterial = new THREE.LineBasicMaterial({
       color: new THREE.Color(0xffffff),
       transparent: true,
-      opacity: baseOpacity * 1.3,
+      opacity: baseOpacity * 1.1,
       depthWrite: false,
     });
     materials.push(edgeMaterial);
@@ -270,7 +270,7 @@ export function createSeismicUniverse(count = 36): {
     const decalMaterial = new THREE.MeshBasicMaterial({
       map: logoTexture,
       transparent: true,
-      opacity: baseOpacity * 1.1,
+      opacity: baseOpacity * 0.9,
       side: THREE.DoubleSide,
       depthWrite: false,
     });

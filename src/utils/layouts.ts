@@ -4,36 +4,31 @@ import { Transform3D } from '../types';
 const dummy = new THREE.Object3D();
 
 /**
- * Fibonacci Sphere distribution for uniform spacing on a 3D sphere surface.
- * Every card faces outward from the sphere center.
+ * Uniform Fibonacci Sphere distribution.
+ * Every card is placed with uniform spacing and faces outward.
  */
-export function generateSphereLayout(count: number, radius?: number): Transform3D[] {
+export function generateSphereLayout(count: number, radius: number = 4.8): Transform3D[] {
   const transforms: Transform3D[] = [];
   const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
 
-  // Calculate dynamic radius if not provided: keeps sphere dense with minimal empty space
-  const cardArea = 2.2 * 2.2;
-  const targetRadius =
-    radius ?? Math.max(4.8, Math.sqrt((count * cardArea * 0.58) / (4 * Math.PI)) * 1.25);
-
   for (let i = 0; i < count; i++) {
-    // Golden spiral algorithm on sphere
-    const y = 1 - (i / Math.max(1, count - 1)) * 2; // y from 1 to -1
+    // Distribute evenly along latitude
+    const y = count === 1 ? 0 : 1 - (i / (count - 1)) * 2;
     const radiusAtY = Math.sqrt(Math.max(0, 1 - y * y));
     const theta = (2 * Math.PI * i) / phi;
 
     const x = Math.cos(theta) * radiusAtY;
     const z = Math.sin(theta) * radiusAtY;
 
-    const posX = x * targetRadius;
-    const posY = y * targetRadius;
-    const posZ = z * targetRadius;
+    const posX = x * radius;
+    const posY = y * radius;
+    const posZ = z * radius;
 
     dummy.position.set(posX, posY, posZ);
     dummy.scale.set(1, 1, 1);
     dummy.rotation.set(0, 0, 0);
 
-    // Face outward away from center (0, 0, 0) to follow curved sphere surface
+    // Look outward from center (0, 0, 0)
     dummy.lookAt(posX * 2, posY * 2, posZ * 2);
 
     const q = dummy.quaternion;
@@ -49,20 +44,20 @@ export function generateSphereLayout(count: number, radius?: number): Transform3
 }
 
 /**
- * Vertical spiral/helix distribution.
- * Cards rotate around the vertical axis and face outwards.
+ * Smooth Helical Ribbon distribution.
+ * Beautifully spaced vertical cylinder spiral with controlled turns.
  */
 export function generateHelixLayout(
   count: number,
-  radius: number = 8.5,
-  height: number = 19,
-  turns: number = 4.5
+  radius: number = 6.2,
+  height: number = 7.5,
+  turns: number = 1.35
 ): Transform3D[] {
   const transforms: Transform3D[] = [];
 
   for (let i = 0; i < count; i++) {
-    const progress = i / Math.max(1, count - 1);
-    const angle = progress * turns * Math.PI * 2;
+    const progress = count === 1 ? 0.5 : i / (count - 1);
+    const angle = progress * turns * Math.PI * 2 - (turns * Math.PI) / 2;
 
     const posX = Math.sin(angle) * radius;
     const posY = (0.5 - progress) * height;
@@ -72,9 +67,8 @@ export function generateHelixLayout(
     dummy.scale.set(1, 1, 1);
     dummy.rotation.set(0, 0, 0);
 
-    // Face outwards from central vertical axis (0, posY, 0)
+    // Face outwards perpendicular to helix curve
     dummy.lookAt(posX * 2, posY, posZ * 2);
-    dummy.rotateX(-0.1);
 
     const q = dummy.quaternion;
 
@@ -89,95 +83,87 @@ export function generateHelixLayout(
 }
 
 /**
- * Crisp 3D Grid matrix layout.
- * Cards are positioned in a perfectly aligned 3D grid with straight rows, columns, and zero jitter.
+ * Clean Single-Layer 2D/3D Grid Layout.
+ * Arranged neatly into rows and columns with no overlapping layers.
  */
 export function generateGridLayout(
   count: number,
-  columns: number = 5,
-  rows: number = 4,
-  spacingX: number = 3.2,
-  spacingY: number = 3.2,
-  spacingZ: number = 4.0
-): Transform3D[] {
-  const transforms: Transform3D[] = [];
-
-  const itemsPerLayer = Math.max(1, columns * rows);
-  const layers = Math.ceil(count / itemsPerLayer);
-
-  const offsetX = ((columns - 1) * spacingX) / 2;
-  const offsetY = ((rows - 1) * spacingY) / 2;
-  const offsetZ = ((layers - 1) * spacingZ) / 2;
-
-  for (let i = 0; i < count; i++) {
-    const layer = Math.floor(i / itemsPerLayer);
-    const indexInLayer = i % itemsPerLayer;
-    const col = indexInLayer % columns;
-    const row = Math.floor(indexInLayer / columns);
-
-    // Perfectly aligned grid coordinates
-    const posX = col * spacingX - offsetX;
-    const posY = offsetY - row * spacingY;
-    const posZ = offsetZ - layer * spacingZ;
-
-    dummy.position.set(posX, posY, posZ);
-    dummy.scale.set(1, 1, 1);
-    dummy.rotation.set(0, 0, 0);
-
-    const q = dummy.quaternion;
-
-    transforms.push({
-      position: [posX, posY, posZ],
-      quaternion: [q.x, q.y, q.z, q.w],
-      scale: [1, 1, 1],
-    });
-  }
-
-  return transforms;
-}
-
-/**
- * Compact 3D Table layout (Periodic/Matrix arrangement).
- * Cards are angled in a curved matrix with natural 3D tilts.
- */
-export function generateTableLayout(
-  count: number,
-  columns: number = 12,
-  spacingX: number = 2.7,
-  spacingY: number = 2.8
+  columns: number = 4,
+  spacingX: number = 2.9,
+  spacingY: number = 3.1
 ): Transform3D[] {
   const transforms: Transform3D[] = [];
   const rows = Math.ceil(count / columns);
 
-  const offsetX = ((columns - 1) * spacingX) / 2;
-  const offsetY = ((rows - 1) * spacingY) / 2;
+  const totalW = (columns - 1) * spacingX;
+  const totalH = (rows - 1) * spacingY;
 
   for (let i = 0; i < count; i++) {
     const col = i % columns;
     const row = Math.floor(i / columns);
 
-    const posX = col * spacingX - offsetX;
-    const posY = offsetY - row * spacingY;
-
-    // Cylindrical curve inward towards user
-    const normalizedDistFromCenter = (col - (columns - 1) / 2) / Math.max(1, (columns - 1) / 2);
-    const posZ = -Math.pow(normalizedDistFromCenter, 2) * 2.8;
+    const posX = col * spacingX - totalW / 2;
+    const posY = totalH / 2 - row * spacingY;
+    const posZ = 0;
 
     dummy.position.set(posX, posY, posZ);
-    dummy.scale.set(0.95, 0.95, 0.95);
-
-    // Subtle inward Y rotation and natural X/Z tilts
-    const rotY = (col - (columns - 1) / 2) * -0.06;
-    const rotX = (row - (rows - 1) / 2) * 0.03;
-    const rotZ = Math.cos(i * 0.5) * 0.04;
-    dummy.rotation.set(rotX, rotY, rotZ);
+    dummy.scale.set(1, 1, 1);
+    dummy.rotation.set(0, 0, 0); // Flat facing camera
 
     const q = dummy.quaternion;
 
     transforms.push({
       position: [posX, posY, posZ],
       quaternion: [q.x, q.y, q.z, q.w],
-      scale: [0.95, 0.95, 0.95],
+      scale: [1, 1, 1],
+    });
+  }
+
+  return transforms;
+}
+
+/**
+ * Curved Theater/Amphitheater Table Layout.
+ * Cards are laid out in rows with a gentle cylindrical curve facing the user.
+ */
+export function generateTableLayout(
+  count: number,
+  columns: number = 8,
+  spacingX: number = 2.8,
+  spacingY: number = 3.0,
+  curveRadius: number = 18
+): Transform3D[] {
+  const transforms: Transform3D[] = [];
+  const rows = Math.ceil(count / columns);
+
+  const totalH = (rows - 1) * spacingY;
+  const angleStep = Math.min(0.22, 1.4 / Math.max(columns - 1, 1));
+
+  for (let i = 0; i < count; i++) {
+    const col = i % columns;
+    const row = Math.floor(i / columns);
+
+    // Angle along horizontal cylindrical arc
+    const normalizedCol = col - (columns - 1) / 2;
+    const angle = normalizedCol * angleStep;
+
+    const posX = Math.sin(angle) * curveRadius;
+    const posZ = (Math.cos(angle) - 1) * curveRadius;
+    const posY = totalH / 2 - row * spacingY;
+
+    dummy.position.set(posX, posY, posZ);
+    dummy.scale.set(1, 1, 1);
+    dummy.rotation.set(0, 0, 0);
+
+    // Look at arc center to face viewer naturally
+    dummy.lookAt(posX * 1.5, posY, posZ * 1.5 - curveRadius * 0.5);
+
+    const q = dummy.quaternion;
+
+    transforms.push({
+      position: [posX, posY, posZ],
+      quaternion: [q.x, q.y, q.z, q.w],
+      scale: [1, 1, 1],
     });
   }
 
