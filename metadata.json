@@ -1,0 +1,6 @@
+{
+  "name": "3D Community Showcase",
+  "description": "Interactive 3D community showcase with Sphere, Helix, Grid, and Table visualization modes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
